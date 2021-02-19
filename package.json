@@ -1,6 +1,6 @@
 {
   "name": "@huds0n/inheriter",
-  "version": "1.5.0-beta.13",
+  "version": "1.5.0-beta.14",
   "description": "Generate inheritable components",
   "main": "./index.js",
   "types": "./index.d.ts",
@@ -20,10 +20,13 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@huds0n/utilities": "1.5.0-beta.13"
+    "@huds0n/utilities": "1.5.0-beta.14"
   },
   "devDependencies": {
-    "@types/react-native": "^0.62.13"
+    "@types/react": "~16.9.35",
+    "@types/react-native": "~0.63.2",
+    "@types/tinycolor2": "^1.4.2",
+    "typescript": "~4.0.0"
   },
   "publishConfig": {
     "access": "public"
