@@ -1,19 +1,13 @@
 import React, { ElementType } from 'react';
 
-import { mergeObjects, useMemo } from '@huds0n/utilities';
+import { mergeEnumerableGetters, mergeObjects } from '@huds0n/utilities';
 import * as Types from './types';
 
 export function createComponent<E extends ElementType, P extends Types.Props>(
   Component: E,
   options: Types.InheritableOptions,
 ): Types.InheritableComponent<E, P> {
-  const {
-    mergePropsFn = mergeObjects,
-    inheritedProps,
-    scripts,
-    presets,
-    memo = false,
-  } = options;
+  const { inheritedProps, scripts, presets, memo = false } = options;
 
   let MergedComponent = getMergedComponent<E, P>(Component, options);
 
@@ -32,31 +26,26 @@ export function createComponent<E extends ElementType, P extends Types.Props>(
     ...assignedProps
   } = Component as any;
 
-  const inheritableMethods: Types.InheritableMethods<E, P> = {
-    addPresets: (newPresets) =>
+  const inheritableMethods = {
+    addPresets: (newPresets: any) =>
       createComponent(Component, {
         ...options,
         presets: { ...presets, ...newPresets },
       }),
-    addProps: (props) =>
+    addProps: (props: any) =>
       createComponent(Component, {
         ...options,
         inheritedProps: getPropsWithStatics(props, {
           inheritedProps,
-          mergePropsFn,
           presets,
         }),
       }),
-    addStatics: (statics) =>
-      // @ts-ignore
-      createComponent(getComponentWithStatics(Component, statics), options),
-    addStyle: (style) =>
+    addStyle: (style: any) =>
       createComponent(Component, {
         ...options,
-        inheritedProps: mergePropsFn(inheritedProps, { style }),
+        inheritedProps: mergeEnumerableGetters(inheritedProps, { style }),
       }),
-    inject: (script) =>
-      // @ts-ignore
+    inject: (script: any) =>
       createComponent(Component, {
         ...options,
         scripts: scripts ? [...scripts, script] : [script],
@@ -65,7 +54,6 @@ export function createComponent<E extends ElementType, P extends Types.Props>(
       createComponent(Component, { ...options, memo: newMemo }),
     _inheritedProps: inheritedProps,
     _memo: memo,
-    _typescriptChecker: () => createComponent(Component, options),
   };
 
   return Object.assign(MergedComponent, assignedProps, inheritableMethods);
@@ -87,9 +75,7 @@ function getMergedProps<P extends Types.Props>(
   props: P,
   options: Types.InheritableOptions,
 ) {
-  let mergedProps = useMemo(() => getPropsWithStatics<P>(props, options), [
-    ...Object.values(props),
-  ]);
+  let mergedProps = getPropsWithStatics<P>(props, options);
   mergedProps = combinePropsWithScripts<P>(mergedProps, options);
   mergedProps = provideDebugging(props, mergedProps, options);
 
@@ -98,31 +84,27 @@ function getMergedProps<P extends Types.Props>(
 
 function getPropsWithStatics<P extends Types.Props>(
   props: P,
-  {
-    inheritedProps,
-    mergePropsFn = mergeObjects,
-    presets,
-  }: Types.InheritableOptions,
+  { inheritedProps, presets }: Types.InheritableOptions,
 ) {
   let formattedProps = props;
 
   if (presets) {
     // @ts-ignore
     formattedProps = Object.entries(props).reduce((acc, [key, prop]) => {
-      if (presets[key]) {
-        return mergePropsFn<P>(acc, presets[key]);
+      if (prop && presets[key]) {
+        return mergeObjects<P>(acc, presets[key]);
       } else {
-        return mergePropsFn<P>(acc, { [key]: prop });
+        return mergeObjects<P>(acc, { [key]: prop });
       }
     }, {});
   }
 
-  return mergePropsFn<P>(inheritedProps, formattedProps);
+  return mergeObjects<P>(inheritedProps, formattedProps);
 }
 
 function combinePropsWithScripts<P extends Types.Props>(
   props: P,
-  { mergePropsFn = mergeObjects, presets, scripts }: Types.InheritableOptions,
+  { presets, scripts }: Types.InheritableOptions,
 ) {
   if (!scripts) return props;
 
@@ -131,24 +113,19 @@ function combinePropsWithScripts<P extends Types.Props>(
 
     if (!scriptProps) return acc;
 
-    return useMemo(() => {
-      if (presets && scriptProps) {
-        let mergedPresetProps = {};
-        for (const key in scriptProps) {
-          if (scriptProps[key] && presets[key]) {
-            mergedPresetProps = mergePropsFn<P>(
-              mergedPresetProps,
-              presets[key],
-            );
-          }
+    if (presets && scriptProps) {
+      let mergedPresetProps = {};
+      for (const key in scriptProps) {
+        if (scriptProps[key] && presets[key]) {
+          mergedPresetProps = mergeObjects<P>(mergedPresetProps, presets[key]);
         }
-        scriptProps = mergePropsFn(mergedPresetProps, scriptProps);
       }
+      scriptProps = mergeObjects(mergedPresetProps, scriptProps);
+    }
 
-      return scriptProps && scriptProps.__overwrite
-        ? (scriptProps as P)
-        : mergePropsFn(acc, scriptProps);
-    }, [...Object.values(scriptProps), ...Object.values(acc)]);
+    return scriptProps && scriptProps.__overwrite
+      ? (scriptProps as P)
+      : mergeObjects(acc, scriptProps);
   }, props);
 }
 
@@ -180,17 +157,4 @@ function provideDebugging<P extends Types.Props>(
       borderWidth: 2,
     },
   };
-}
-
-function getComponentWithStatics<E extends ElementType, P extends Types.Props>(
-  Component: E,
-  statics: Object,
-) {
-  return Object.assign(
-    React.forwardRef<Types.GetRef<E>, P>((props, ref) => {
-      // @ts-ignore
-      return <Component ref={ref} {...props} />;
-    }),
-    statics,
-  );
 }

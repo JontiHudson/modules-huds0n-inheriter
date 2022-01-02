@@ -4,7 +4,7 @@ export type Props = { [key: string]: any };
 export type Script<
   P extends Props,
   IP extends Props,
-  O extends Partial<P> | false | void = void
+  O extends Partial<P> | false | void = void,
 > = (props: IP & P) => O;
 
 type InheriterProps = {
@@ -56,12 +56,13 @@ export type PropsAfterPreset<P extends Props, Pr extends PresetsType<P>> = P &
   Partial<Record<keyof Pr, boolean>>;
 
 export type InheritableOptions = {
-  mergePropsFn?: <T>(props1: any, props2: any) => T;
   inheritedProps?: any;
   scripts?: Script<any, any, any>[];
   presets?: Record<string, Props>;
   memo?: boolean;
 };
+
+export type MergePropsFn = <T>(props1: any, props2: any) => T;
 
 type GetAssignedProps<T extends ElementType> = T extends ElementType & infer A
   ? Omit<A, 'prototype' | 'context'>
@@ -74,7 +75,6 @@ export type InheritableMethods<E extends ElementType, P extends Props> = {
   addProps: <AP extends Partial<P>>(
     props: AP,
   ) => InheritableComponent<E, PropsAfterAdd<P, AP>>;
-  addStatics: <S extends Object>(statics: S) => InheritableComponent<E & S, P>;
   addStyle: (style: ComponentStyle<P>) => InheritableComponent<E, P>;
   inject: <IP extends Props = {}, OP extends Partial<P> | false | void = {}>(
     script: Script<P, IP, OP>,
@@ -82,16 +82,11 @@ export type InheritableMethods<E extends ElementType, P extends Props> = {
   setMemo: (memoize?: boolean) => InheritableComponent<E, P>;
   _inheritedProps: P;
   _memo: boolean;
-  _typescriptChecker: (
-    props?: keyof P,
-    requiredProps?: RequiredKeys<P>,
-    ref?: keyof NonNullable<GetRef<E>>,
-  ) => InheritableComponent<E, P>;
 };
 
 export type InheritableComponent<
   E extends ElementType,
-  P extends Props = GetProps<E>
+  P extends Props = GetProps<E>,
 > = React.ForwardRefExoticComponent<
   React.PropsWithoutRef<ComponentProps<P>> & React.RefAttributes<GetRef<E>>
 > &
