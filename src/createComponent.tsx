@@ -1,11 +1,11 @@
-import React, { ElementType } from 'react';
+import React, { ElementType } from "react";
 
-import { mergeEnumerableGetters, mergeObjects } from '@huds0n/utilities';
-import * as Types from './types';
+import { mergeEnumerableGetters, mergeObjects } from "@huds0n/utilities";
+import type { Types } from "./types";
 
 export function createComponent<E extends ElementType, P extends Types.Props>(
   Component: E,
-  options: Types.InheritableOptions,
+  options: Types.InheritableOptions
 ): Types.InheritableComponent<E, P> {
   const { inheritedProps, scripts, presets, memo = false } = options;
 
@@ -61,7 +61,7 @@ export function createComponent<E extends ElementType, P extends Types.Props>(
 
 function getMergedComponent<E extends ElementType, P extends Types.Props>(
   Component: E,
-  options: Types.InheritableOptions,
+  options: Types.InheritableOptions
 ) {
   return React.forwardRef<Types.GetRef<E>, P>((props, ref) => {
     const mergedProps = getMergedProps(props, options);
@@ -73,7 +73,7 @@ function getMergedComponent<E extends ElementType, P extends Types.Props>(
 
 function getMergedProps<P extends Types.Props>(
   props: P,
-  options: Types.InheritableOptions,
+  options: Types.InheritableOptions
 ) {
   let mergedProps = getPropsWithStatics<P>(props, options);
   mergedProps = combinePropsWithScripts<P>(mergedProps, options);
@@ -84,7 +84,7 @@ function getMergedProps<P extends Types.Props>(
 
 function getPropsWithStatics<P extends Types.Props>(
   props: P,
-  { inheritedProps, presets }: Types.InheritableOptions,
+  { inheritedProps, presets }: Types.InheritableOptions
 ) {
   let formattedProps = props;
 
@@ -104,7 +104,7 @@ function getPropsWithStatics<P extends Types.Props>(
 
 function combinePropsWithScripts<P extends Types.Props>(
   props: P,
-  { presets, scripts }: Types.InheritableOptions,
+  { presets, scripts }: Types.InheritableOptions
 ) {
   if (!scripts) return props;
 
@@ -132,12 +132,12 @@ function combinePropsWithScripts<P extends Types.Props>(
 function provideDebugging<P extends Types.Props>(
   props: P,
   mergedProps: P,
-  { inheritedProps }: Types.InheritableOptions,
+  { inheritedProps }: Types.InheritableOptions
 ) {
   if (!mergedProps.__debug) return mergedProps;
 
-  console.log('************************');
-  typeof props.__debug === 'string'
+  console.log("************************");
+  typeof props.__debug === "string"
     ? console.log(props.__debug, {
         inheritedProps,
         props,
@@ -153,7 +153,7 @@ function provideDebugging<P extends Types.Props>(
     ...mergedProps,
     style: {
       ...mergedProps.style,
-      borderColor: 'red',
+      borderColor: "red",
       borderWidth: 2,
     },
   };

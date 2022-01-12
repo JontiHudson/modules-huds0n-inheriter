@@ -1,12 +1,12 @@
-import { ElementType } from 'react';
+import { ElementType } from "react";
 
-import { createComponent } from './createComponent';
-import * as InheriterTypes from './types';
+import { createComponent } from "./createComponent";
+import { Types } from "./types";
 
 export function createInheritableComponent<E extends ElementType>(
-  Component: E,
-): InheriterTypes.InheritableComponent<E> {
+  Component: E
+): Types.InheritableComponent<E> {
   return createComponent(Component, {});
 }
 
-export { InheriterTypes };
+export type { Types as InheriterTypes };
