@@ -10,16 +10,28 @@ function createComponent(Component, options) {
     if (memo) {
         MergedComponent = react_1.default.memo(MergedComponent);
     }
-    const _a = Component, { $$typeof, compare, displayName, propTypes, render, type } = _a, assignedProps = (0, tslib_1.__rest)(_a, ["$$typeof", "compare", "displayName", "propTypes", "render", "type"]);
+    const { $$typeof, compare, displayName, propTypes, render, type, ...assignedProps } = Component;
     const inheritableMethods = {
-        addPresets: (newPresets) => createComponent(Component, Object.assign(Object.assign({}, options), { presets: Object.assign(Object.assign({}, presets), newPresets) })),
-        addProps: (props) => createComponent(Component, Object.assign(Object.assign({}, options), { inheritedProps: getPropsWithStatics(props, {
+        addPresets: (newPresets) => createComponent(Component, {
+            ...options,
+            presets: { ...presets, ...newPresets },
+        }),
+        addProps: (props) => createComponent(Component, {
+            ...options,
+            inheritedProps: getPropsWithStatics(props, {
                 inheritedProps,
                 presets,
-            }) })),
-        addStyle: (style) => createComponent(Component, Object.assign(Object.assign({}, options), { inheritedProps: (0, utilities_1.mergeEnumerableGetters)(inheritedProps, { style }) })),
-        inject: (script) => createComponent(Component, Object.assign(Object.assign({}, options), { scripts: scripts ? [...scripts, script] : [script] })),
-        setMemo: (newMemo = true) => createComponent(Component, Object.assign(Object.assign({}, options), { memo: newMemo })),
+            }),
+        }),
+        addStyle: (style) => createComponent(Component, {
+            ...options,
+            inheritedProps: (0, utilities_1.mergeEnumerableGetters)(inheritedProps, { style }),
+        }),
+        inject: (script) => createComponent(Component, {
+            ...options,
+            scripts: scripts ? [...scripts, script] : [script],
+        }),
+        setMemo: (newMemo = true) => createComponent(Component, { ...options, memo: newMemo }),
         _inheritedProps: inheritedProps,
         _memo: memo,
     };
@@ -88,5 +100,12 @@ function provideDebugging(props, mergedProps, { inheritedProps }) {
             props,
             mergedProps,
         });
-    return Object.assign(Object.assign({}, mergedProps), { style: Object.assign(Object.assign({}, mergedProps.style), { borderColor: "red", borderWidth: 2 }) });
+    return {
+        ...mergedProps,
+        style: {
+            ...mergedProps.style,
+            borderColor: "red",
+            borderWidth: 2,
+        },
+    };
 }
